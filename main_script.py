@@ -163,7 +163,7 @@ if audio_file:
                 st.warning("Please enter the student's email address.")
             elif not SMTP_USER or not SMTP_PASSWORD:
                 st.error("Email sending is not configured. Please set SMTP_USER and SMTP_PASSWORD in your .env file.")
-              else:
+            else:
                 try:
                     # Split and clean addresses
                     to_addresses = [email.strip() for email in student_email.split(",") if email.strip()]
