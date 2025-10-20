@@ -43,7 +43,7 @@ if audio_file:
         st.info("Generating feedback from Dr. Al (AI trauma coach)...")
 
         messages = [
-            {"role": "system", "content": ""You are Dr. Al, an expert trauma surgeon chatbot that helps medical students improve trauma case presentations.
+            {"role": "system", "content": """You are Dr. Al, an expert trauma surgeon chatbot that helps medical students improve trauma case presentations.
 Give constructive feedback based on ATLS principles. Use the following evaluation grid to assess the student's performance.
 You will receive the audio transcript of a medical student's presentation as a text input.
 
@@ -118,7 +118,7 @@ Total Score: 1–40
 •	36–40: Excellent – The student shows a strong command of trauma assessment and management, communicates clearly, and makes well-prioritized decisions.
 •	30–35: Good – The student demonstrates competence with only minor areas for improvement in presentation or clinical reasoning.
 •	20–29: Satisfactory – The student performs adequately but may have several areas for improvement, especially in structure, clinical reasoning, or communication.
-•	Below 20: Needs Improvement – Significant deficiencies in multiple areas, requiring additional practice or support.""},
+•	Below 20: Needs Improvement – Significant deficiencies in multiple areas, requiring additional practice or support."""},
             {"role": "user", "content": transcribed_text}
         ]
 
