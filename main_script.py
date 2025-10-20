@@ -140,8 +140,9 @@ if audio_file:
         st.subheader("💬 Review and Edit Feedback")
         edited_feedback = st.text_area(
             "Faculty can edit or add comments below before sending:",
-            ai_feedback,
-            height=300
+            value=st.session_state.ai_feedback,  # <-- use session_state here
+            height=300,
+            key="feedback_area"
         )
         st.session_state.edited_feedback = edited_feedback  
         
