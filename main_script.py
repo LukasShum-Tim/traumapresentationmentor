@@ -179,7 +179,7 @@ if audio_file:
                     msg["Subject"] = email_subject
 
                     if student_name:
-                        body = f"Dear \n{student_name},\n\nHere is your ATLS presentation feedback:\n\n"
+                        body = f"Dear {student_name},\n\nHere is your ATLS presentation and feedback:\n\n"
                     else:
                         body = f"Dear Student,\n\nHere is your ATLS presentation feedback:\n\n"
 
