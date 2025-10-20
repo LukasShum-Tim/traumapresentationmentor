@@ -1,4 +1,8 @@
 import os
+import smtplib
+from email.mime.text import MIMEText
+from email.mime.multipart import MIMEMultipart
+
 import openai
 import streamlit as st
 from dotenv import load_dotenv
@@ -8,18 +12,24 @@ load_dotenv()
 openai.api_key = os.getenv("OPENAI_API_KEY")
 client = openai.OpenAI()
 
+# Email configuration (use environment variables for safety)
+SMTP_SERVER = st.secrets["SMTP_SERVER"]
+SMTP_PORT = int(st.secrets["SMTP_PORT"])
+SMTP_USER = st.secrets["SMTP_USER"]
+SMTP_PASSWORD = st.secrets["SMTP_PASSWORD"]
+
 # Streamlit UI setup
 st.set_page_config(page_title="ATLS Trauma Presentation Coach", page_icon="🩺", layout="centered")
 st.title("🩺 ATLS Trauma Presentation Coach")
-st.markdown("Record your trauma case presentation and receive AI-powered feedback based on **ATLS principles**.")
+st.markdown("Record or upload a presentation to receive AI-based feedback, edit it, and send to your student.")
 
-# Audio recording widget
+# Audio input
 audio_file = st.audio_input("🎙️ Record or upload your presentation (max ~2 min recommended):")
 
 if audio_file:
     st.info("Processing your presentation... Please wait.")
     try:
-        # Send to Whisper transcription
+        # Transcribe using Whisper
         transcript = client.audio.transcriptions.create(
             model="whisper-1",
             file=audio_file
@@ -29,11 +39,11 @@ if audio_file:
         st.subheader("📋 Transcript:")
         st.text_area("Transcribed Text", transcribed_text, height=200)
 
-        # Generate AI feedback
+        # AI feedback
         st.info("Generating feedback from Dr. Al (AI trauma coach)...")
 
         messages = [
-            {"role": "system", "content": """You are Dr. Al, an expert trauma surgeon chatbot that helps medical students improve trauma case presentations.
+            {"role": "system", "content": ""You are Dr. Al, an expert trauma surgeon chatbot that helps medical students improve trauma case presentations.
 Give constructive feedback based on ATLS principles. Use the following evaluation grid to assess the student's performance.
 You will receive the audio transcript of a medical student's presentation as a text input.
 
@@ -111,7 +121,6 @@ Total Score: 1–40
 •	Below 20: Needs Improvement – Significant deficiencies in multiple areas, requiring additional practice or support.
 
 
-
 """},
             {"role": "user", "content": transcribed_text}
         ]
@@ -123,10 +132,58 @@ Total Score: 1–40
             seed=365
         )
 
-        feedback = completion.choices[0].message.content
+        ai_feedback = completion.choices[0].message.content
+        st.success("✅ Feedback generated.")
 
-        st.subheader("💬 AI Feedback:")
-        st.write(feedback)
+        st.subheader("💬 Review and Edit Feedback")
+        edited_feedback = st.text_area(
+            "Faculty can edit or add comments below before sending:",
+            ai_feedback,
+            height=300
+        )
+
+        # Email section
+        st.subheader("✉️ Send Feedback to Student")
+        col1, col2 = st.columns(2)
+        with col1:
+            student_email = st.text_input("Student Email")
+        with col2:
+            faculty_name = st.text_input("Faculty Name (optional)")
+
+        email_subject = st.text_input("Email Subject", "ATLS Presentation Feedback")
+        send_email = st.button("📤 Send Feedback via Email")
+
+        if send_email:
+            if not student_email:
+                st.warning("Please enter the student's email address.")
+            elif not SMTP_USER or not SMTP_PASSWORD:
+                st.error("Email sending is not configured. Please set SMTP_USER and SMTP_PASSWORD in your .env file.")
+            else:
+                try:
+                    # Compose email
+                    msg = MIMEMultipart()
+                    msg["From"] = SMTP_USER
+                    msg["To"] = student_email
+                    msg["Subject"] = email_subject
+
+                    body = f"Dear Student,\n\nHere is your ATLS presentation feedback:\n\n{edited_feedback}\n\n"
+                    if faculty_name:
+                        body += f"Best regards,\n{faculty_name}"
+                    else:
+                        body += "Best regards,\nATLS Faculty"
+
+                    msg.attach(MIMEText(body, "plain"))
+
+                    # Send email
+                    with smtplib.SMTP(SMTP_SERVER, SMTP_PORT) as server:
+                        server.starttls()
+                        server.login(SMTP_USER, SMTP_PASSWORD)
+                        server.send_message(msg)
+
+                    st.success(f"✅ Feedback successfully sent to {student_email}!")
+
+                except Exception as e:
+                    st.error(f"An error occurred while sending the email: {e}")
 
     except Exception as e:
         st.error(f"An error occurred during processing: {e}")
