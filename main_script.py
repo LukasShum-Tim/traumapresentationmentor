@@ -118,10 +118,7 @@ Total Score: 1–40
 •	36–40: Excellent – The student shows a strong command of trauma assessment and management, communicates clearly, and makes well-prioritized decisions.
 •	30–35: Good – The student demonstrates competence with only minor areas for improvement in presentation or clinical reasoning.
 •	20–29: Satisfactory – The student performs adequately but may have several areas for improvement, especially in structure, clinical reasoning, or communication.
-•	Below 20: Needs Improvement – Significant deficiencies in multiple areas, requiring additional practice or support.
-
-
-"""},
+•	Below 20: Needs Improvement – Significant deficiencies in multiple areas, requiring additional practice or support.""},
             {"role": "user", "content": transcribed_text}
         ]
 
