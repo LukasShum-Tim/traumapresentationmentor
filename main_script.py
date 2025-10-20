@@ -154,6 +154,7 @@ if audio_file:
             cc_emails = st.text_input("CC Email(s) (optional, comma separated)")
         with col2:
             faculty_name = st.text_input("Faculty Name (optional)")
+            student_name = st.text_input("Student Name (optional)")
 
         email_subject = st.text_input("Email Subject", "ATLS Presentation Feedback")
         send_email = st.button("📤 Send Feedback via Email")
@@ -176,8 +177,15 @@ if audio_file:
                     msg["To"] = ", ".join(to_addresses)
                     msg["Cc"] = ", ".join(cc_addresses)
                     msg["Subject"] = email_subject
-        
-                    body = f"Dear Student,\n\nHere is your ATLS presentation feedback:\n\n{st.session_state.edited_feedback}\n\n"
+
+                    if student_name:
+                        body = f"Dear \n{student_name},\n\nHere is your ATLS presentation feedback:\n\n"
+                    else:
+                        body = f"Dear Student,\n\nHere is your ATLS presentation feedback:\n\n"
+
+                    body += f"--- Student Presentation Transcript ---\n{transcribed_text}\n\n"
+                    body += f"--- Feedback ---\n{st.session_state.edited_feedback}\n\n"
+                    
                     if faculty_name:
                         body += f"Best regards,\n{faculty_name}"
                     else:
