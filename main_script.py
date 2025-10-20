@@ -150,7 +150,8 @@ if audio_file:
         st.subheader("✉️ Send Feedback to Student")
         col1, col2 = st.columns(2)
         with col1:
-            student_email = st.text_input("Student Email")
+            student_email = st.text_input("Student Email(s) (comma separated)")
+            cc_emails = st.text_input("CC Email(s) (optional, comma separated)")
         with col2:
             faculty_name = st.text_input("Faculty Name (optional)")
 
@@ -162,30 +163,36 @@ if audio_file:
                 st.warning("Please enter the student's email address.")
             elif not SMTP_USER or not SMTP_PASSWORD:
                 st.error("Email sending is not configured. Please set SMTP_USER and SMTP_PASSWORD in your .env file.")
-            else:
+              else:
                 try:
+                    # Split and clean addresses
+                    to_addresses = [email.strip() for email in student_email.split(",") if email.strip()]
+                    cc_addresses = [email.strip() for email in cc_emails.split(",") if email.strip()]
+                    all_recipients = to_addresses + cc_addresses
+        
                     # Compose email
                     msg = MIMEMultipart()
                     msg["From"] = SMTP_USER
-                    msg["To"] = student_email
+                    msg["To"] = ", ".join(to_addresses)
+                    msg["Cc"] = ", ".join(cc_addresses)
                     msg["Subject"] = email_subject
-
-                    body = f"Dear Student,\n\nHere is your ATLS presentation feedback:\n\n{edited_feedback}\n\n"
+        
+                    body = f"Dear Student,\n\nHere is your ATLS presentation feedback:\n\n{st.session_state.edited_feedback}\n\n"
                     if faculty_name:
                         body += f"Best regards,\n{faculty_name}"
                     else:
                         body += "Best regards,\nATLS Faculty"
-
+        
                     msg.attach(MIMEText(body, "plain"))
-
+        
                     # Send email
                     with smtplib.SMTP(SMTP_SERVER, SMTP_PORT) as server:
                         server.starttls()
                         server.login(SMTP_USER, SMTP_PASSWORD)
-                        server.send_message(msg)
-
-                    st.success(f"✅ Feedback successfully sent to {student_email}!")
-
+                        server.send_message(msg, from_addr=SMTP_USER, to_addrs=all_recipients)
+        
+                    st.success(f"✅ Feedback successfully sent to: {', '.join(all_recipients)}!")
+        
                 except Exception as e:
                     st.error(f"An error occurred while sending the email: {e}")
 
